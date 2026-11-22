@@ -27,7 +27,6 @@
 
 	<ItemGroup>
 		<Folder Include="Components\Pages\EstudiantePages\" />
-		<Folder Include="wwwroot\Imagenes\" />
 	</ItemGroup>
 
 </Project>
