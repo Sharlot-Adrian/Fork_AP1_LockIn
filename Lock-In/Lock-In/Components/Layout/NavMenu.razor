@@ -12,8 +12,7 @@
        class="navbar-toggler" />
 
 <div class="nav-scrollable"
-     onclick="document.querySelector('.navbar-toggler').click()">
-
+     onclick="document.querySelector('.navbar-toggler')?.dispatchEvent(new MouseEvent('click'))">
     <nav class="nav flex-column">
 
         @* Inicio *@
@@ -35,6 +34,19 @@
                              href="/administrador/usuarios">
                         <span class="bi bi-people-fill me-2"></span>
                         Gestión de Usuarios
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        @* Gestión de Solicitudes: Administrador y Bibliotecario *@
+        <AuthorizeView Roles="Administrador,Bibliotecario">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link"
+                             href="/Solicitudes">
+                        <span class="bi bi-clipboard-check me-2"></span>
+                        Gestión de Solicitudes
                     </NavLink>
                 </div>
             </Authorized>
