@@ -3,7 +3,7 @@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Lock-In</a>
+        <a class="navbar-brand" href="/">Lock-In</a>
     </div>
 </div>
 
@@ -12,100 +12,117 @@
        class="navbar-toggler" />
 
 <div class="nav-scrollable"
-     onclick="document.querySelector('.navbar-toggler')?.dispatchEvent(new MouseEvent('click'))">
+     onclick="(document.querySelector('.navbar-toggler') as HTMLInputElement)?.click()">
     <nav class="nav flex-column">
 
-        @* Inicio *@
-        <div class="nav-item px-3">
-            <NavLink class="nav-link"
-                     href=""
-                     Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu"
-                      aria-hidden="true"></span>
-                Home
-            </NavLink>
-        </div>
+        @* ========================================= *@
+        @* INICIO - TODOS LOS ROLES                  *@
+        @* ========================================= *@
 
-        @* Gestión de usuarios: Administrador *@
+        <AuthorizeView Roles="Administrador,Bibliotecario,Estudiante">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link"
+                             href="/"
+                             Match="NavLinkMatch.All">
+
+                        <img src="/Imagenes/icons8-school-locker.svg"
+                             alt="Casilleros"
+                             class="nav-icon"
+                             style="width: 39px; height: 39px; margin-right: 10px;" />
+
+                        <span>Inicio - Casilleros</span>
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        @* ========================================= *@
+        @* ADMINISTRADOR                             *@
+        @* ========================================= *@
+
         <AuthorizeView Roles="Administrador">
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link"
                              href="/administrador/usuarios">
+
                         <span class="bi bi-people-fill me-2"></span>
                         Gestión de Usuarios
+
                     </NavLink>
                 </div>
             </Authorized>
         </AuthorizeView>
 
-        @* Gestión de Solicitudes: Administrador y Bibliotecario *@
+        @* ========================================= *@
+        @* ADMINISTRADOR Y BIBLIOTECARIO             *@
+        @* ========================================= *@
+
         <AuthorizeView Roles="Administrador,Bibliotecario">
             <Authorized>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link"
                              href="/Solicitudes">
-                        <span class="bi bi-clipboard-check me-2"></span>
+
+                        <span class="bi bi-clipboard-check-fill me-2"></span>
                         Gestión de Solicitudes
+
                     </NavLink>
                 </div>
-            </Authorized>
-        </AuthorizeView>
 
-        @* Diagrama de casilleros: todos los roles *@
-        <AuthorizeView Roles="Administrador,Bibliotecario,Estudiante">
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link"
-                             href="/Casilleros/Diagrama">
-                        <img src="/Imagenes/icons8-school-locker.svg"
-                             alt="Casilleros"
-                             class="nav-icon"
-                             style="width: 39px; height: 39px; margin-right: 10px;" />
-                        <span>Casilleros</span>
-                    </NavLink>
-                </div>
-            </Authorized>
-        </AuthorizeView>
-
-        @* Gestión de casilleros: Administrador y Bibliotecario *@
-        <AuthorizeView Roles="Administrador,Bibliotecario">
-            <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link"
                              href="/Casilleros/Index">
+
                         <span class="bi bi-list-nested-nav-menu"
                               aria-hidden="true"></span>
                         Index Casilleros
+
                     </NavLink>
                 </div>
+
             </Authorized>
         </AuthorizeView>
 
-        @* Página de prueba de autorización *@
+        @* ========================================= *@
+        @* PÁGINA DE PRUEBA DE AUTORIZACIÓN           *@
+        @* ========================================= *@
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="auth">
+
                 <span class="bi bi-lock-nav-menu"
                       aria-hidden="true"></span>
                 Auth Required
+
             </NavLink>
         </div>
 
-        @* Opciones de cuenta *@
+        @* ========================================= *@
+        @* CUENTA Y CIERRE DE SESIÓN                  *@
+        @* ========================================= *@
+
         <AuthorizeView>
-            <Authorized>
+            <Authorized Context="authContext">
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link"
                              href="Account/Manage">
+
                         <span class="bi bi-person-fill-nav-menu"
                               aria-hidden="true"></span>
-                        @context.User.Identity?.Name
+
+                        @authContext.User.Identity?.Name
+
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <form action="Account/Logout"
                           method="post">
+
                         <AntiforgeryToken />
 
                         <input type="hidden"
@@ -114,33 +131,16 @@
 
                         <button type="submit"
                                 class="nav-link">
+
                             <span class="bi bi-arrow-bar-left-nav-menu"
                                   aria-hidden="true"></span>
                             Logout
+
                         </button>
                     </form>
                 </div>
+
             </Authorized>
-
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link"
-                             href="Account/Register">
-                        <span class="bi bi-person-nav-menu"
-                              aria-hidden="true"></span>
-                        Register
-                    </NavLink>
-                </div>
-
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link"
-                             href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu"
-                              aria-hidden="true"></span>
-                        Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
         </AuthorizeView>
 
     </nav>
