@@ -1,0 +1,190 @@
+﻿@page "/Asignaciones/Index"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject AsignacionesService asignacionesService
+@inject ToastService toastService
+
+<PageTitle>Index de Asignaciones</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-content-center mb-4">
+            <h5 class="card-title">Registro de Asignaciones</h5>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrWhiteSpace(Mensaje))
+            {
+                <div class="alert alert-info">@Mensaje</div>
+            }
+
+            <div class="row">
+                <div class="col-3">
+                    <label class="col-form-label"><strong>Filtrar por</strong></label>
+                </div>
+                <div class="col-4">
+                    <label class="col-form-label"><strong>B&uacute;squeda</strong></label>
+                </div>
+            </div>
+
+            <div class="row align-items-center">
+                <div class="col-3">
+                    <InputSelect class="form-select" @bind-Value="Filtro">
+                        <option value="" selected disabled>Elija una opci&oacute;n</option>
+                        <option value="Estado">Estado</option>
+                        <option value="Casillero">Casillero</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
+                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid mt-2">
+                <QuickGrid Items="@itemsQueryable">
+                    <PropertyColumn Property="@(a => a.AsignacionId)" Sortable="true" />
+                    <PropertyColumn Property="@(a => a.EstudianteId)" Title="Estudiante" Sortable="true" />
+                    <PropertyColumn Property="@(a => a.CasilleroId)" Title="Casillero" Sortable="true" />
+                    <PropertyColumn Property="@(a => a.Estado)" Sortable="true" />
+                    <PropertyColumn Property="@(a => a.FechaEntrega)" Format="dd/MM/yy" Sortable="true" />
+
+                    <TemplateColumn Title="Opciones">
+                        @if (context.Estado == EstadoAsignacion.PendienteEntrega)
+                        {
+                            <button type="button" class="btn btn-sm btn-primary" @onclick="() => Entregar(context.AsignacionId)">
+                                Entregar
+                            </button>
+                        }
+                        else if (context.Estado == EstadoAsignacion.Activa)
+                        {
+                            <button type="button" class="btn btn-sm btn-warning"
+                                    data-bs-toggle="modal" data-bs-target="#modalFinalizar"
+                                    @onclick="() => SeleccionarAsignacion(context)">
+                                Finalizar
+                            </button>
+                        }
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between align-center mb-4">
+            <label class="ms-3"><strong>Cantidad: </strong>@itemsQueryable?.Count()</label>
+        </div>
+    </div>
+</div>
+
+@*Modal finalizar*@
+<div class="modal" id="modalFinalizar" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Finalizar Asignaci&oacute;n</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                @if (asignacionActual != null)
+                {
+                    <p>Asignaci&oacute;n #@asignacionActual.AsignacionId — Casillero #@asignacionActual.CasilleroId</p>
+                    <label class="form-label">Estado final de la llave</label>
+                    <InputSelect class="form-select" @bind-Value="estadoLlave">
+                        <option value="@EstadoLlave.Disponible">Disponible</option>
+                        <option value="@EstadoLlave.Deteriorada">Deteriorada</option>
+                        <option value="@EstadoLlave.Perdida">Perdida</option>
+                    </InputSelect>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @onclick="Finalizar" data-bs-dismiss="modal">Confirmar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    IQueryable<Asignaciones?> itemsQueryable;
+
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public string Mensaje { get; set; } = string.Empty;
+
+    public Asignaciones? asignacionActual { get; set; }
+    public EstadoLlave estadoLlave { get; set; } = EstadoLlave.Disponible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await asignacionesService.GetList(a => a.AsignacionId > 0);
+        itemsQueryable = result.Value.AsQueryable();
+    }
+
+    private async Task Buscar()
+    {
+        if (ValorFiltro.Trim() != "" && Filtro == "Estado")
+        {
+            var resultEstado = await asignacionesService.GetList(a => a.Estado.ToString().ToLower().Contains(ValorFiltro.ToLower()));
+            itemsQueryable = resultEstado.Value.AsQueryable();
+        }
+        else if (ValorFiltro.Trim() != "" && Filtro == "Casillero" && int.TryParse(ValorFiltro.Trim(), out int casilleroId))
+        {
+            var resultCasillero = await asignacionesService.GetList(a => a.CasilleroId == casilleroId);
+            itemsQueryable = resultCasillero.Value.AsQueryable();
+        }
+        else
+        {
+            var result = await asignacionesService.GetList(a => a.AsignacionId > 0);
+            itemsQueryable = result.Value.AsQueryable();
+        }
+    }
+
+    private async Task Entregar(int asignacionId)
+    {
+        var result = await asignacionesService.EntregarLlave(asignacionId);
+
+        result.OnSuccess(async () =>
+        {
+            toastService.ShowSuccess("¡Llave entregada exitosamente!");
+            var lista = await asignacionesService.GetList(a => a.AsignacionId > 0);
+            itemsQueryable = lista.Value.AsQueryable();
+        });
+
+        result.OnFailure(() => toastService.ShowError("No se ha podido entregar la llave."));
+    }
+
+    private void SeleccionarAsignacion(Asignaciones item)
+    {
+        asignacionActual = item;
+        estadoLlave = EstadoLlave.Disponible;
+    }
+
+    private async Task Finalizar()
+    {
+        if (asignacionActual == null) return;
+
+        int estudianteId = asignacionActual.EstudianteId;
+        int id = asignacionActual.AsignacionId;
+
+        var result = await asignacionesService.FinalizarAsignacion(id, estadoLlave);
+
+        result.OnSuccess(async () =>
+        {
+            toastService.ShowSuccess("¡Asignación finalizada exitosamente!");
+
+            if (estadoLlave == EstadoLlave.Perdida)
+            {
+                int perdidas = await asignacionesService.ContarLlavesPerdidas(estudianteId);
+                decimal monto = await asignacionesService.CalcularMontoLlavePerdida(estudianteId);
+                Mensaje = $"Llave perdida ({perdidas} acumuladas). Monto a cobrar: RD${monto:N2}.";
+            }
+
+            asignacionActual = null;
+            var lista = await asignacionesService.GetList(a => a.AsignacionId > 0);
+            itemsQueryable = lista.Value.AsQueryable();
+        });
+
+        result.OnFailure(() => toastService.ShowError("No se ha podido finalizar la asignación."));
+    }
+}
