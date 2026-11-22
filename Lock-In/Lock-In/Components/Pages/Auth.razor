@@ -11,3 +11,36 @@
 <AuthorizeView>
     Hello @context.User.Identity?.Name!
 </AuthorizeView>
+
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h4>Diagnóstico de usuario</h4>
+
+<p>Usuario: @nombreUsuario</p>
+<p>Autenticado: @autenticado</p>
+<p>Es estudiante: @esEstudiante</p>
+<p>Roles: @roles</p>
+
+@code {
+    private string nombreUsuario = "";
+    private bool autenticado;
+    private bool esEstudiante;
+    private string roles = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var estado = await AuthenticationStateProvider
+            .GetAuthenticationStateAsync();
+
+        var usuario = estado.User;
+
+        nombreUsuario = usuario.Identity?.Name ?? "Sin usuario";
+        autenticado = usuario.Identity?.IsAuthenticated ?? false;
+        esEstudiante = usuario.IsInRole("Estudiante");
+
+        roles = string.Join(", ",
+            usuario.FindAll(System.Security.Claims.ClaimTypes.Role)
+                .Select(r => r.Value));
+    }
+}

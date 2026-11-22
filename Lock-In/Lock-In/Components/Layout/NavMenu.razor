@@ -1,5 +1,4 @@
 ﻿@implements IDisposable
-
 @inject NavigationManager NavigationManager
 
 <div class="top-row ps-3 navbar navbar-dark">
@@ -8,76 +7,130 @@
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<input type="checkbox"
+       title="Navigation menu"
+       class="navbar-toggler" />
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+<div class="nav-scrollable"
+     onclick="document.querySelector('.navbar-toggler').click()">
+
     <nav class="nav flex-column">
+
+        @* Inicio *@
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link"
+                     href=""
+                     Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu"
+                      aria-hidden="true"></span>
+                Home
             </NavLink>
         </div>
+
+        @* Gestión de usuarios: Administrador *@
         <AuthorizeView Roles="Administrador">
             <Authorized>
-                <li>
+                <div class="nav-item px-3">
                     <NavLink class="nav-link"
                              href="/administrador/usuarios">
                         <span class="bi bi-people-fill me-2"></span>
                         Gestión de Usuarios
                     </NavLink>
-                </li>
+                </div>
             </Authorized>
         </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/Casilleros/Diagrama">
-                <img src="/Imagenes/icons8-school-locker.svg" alt="Casilleros" class="nav-icon" style="width: 39px; height: 39px; margin-right: 10px;" /><span>Casilleros</span>
+        @* Diagrama de casilleros: todos los roles *@
+        <AuthorizeView Roles="Administrador,Bibliotecario,Estudiante">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link"
+                             href="/Casilleros/Diagrama">
+                        <img src="/Imagenes/icons8-school-locker.svg"
+                             alt="Casilleros"
+                             class="nav-icon"
+                             style="width: 39px; height: 39px; margin-right: 10px;" />
+                        <span>Casilleros</span>
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-            </NavLink>
-        </div>
+        @* Gestión de casilleros: Administrador y Bibliotecario *@
+        <AuthorizeView Roles="Administrador,Bibliotecario">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link"
+                             href="/Casilleros/Index">
+                        <span class="bi bi-list-nested-nav-menu"
+                              aria-hidden="true"></span>
+                        Index Casilleros
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/Casilleros/Index">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Index Casilleros
-            </NavLink>
-        </div>
-
+        @* Página de prueba de autorización *@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
+                <span class="bi bi-lock-nav-menu"
+                      aria-hidden="true"></span>
+                Auth Required
             </NavLink>
         </div>
 
+        @* Opciones de cuenta *@
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                    <NavLink class="nav-link"
+                             href="Account/Manage">
+                        <span class="bi bi-person-fill-nav-menu"
+                              aria-hidden="true"></span>
+                        @context.User.Identity?.Name
                     </NavLink>
                 </div>
+
                 <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
+                    <form action="Account/Logout"
+                          method="post">
                         <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+
+                        <input type="hidden"
+                               name="ReturnUrl"
+                               value="@currentUrl" />
+
+                        <button type="submit"
+                                class="nav-link">
+                            <span class="bi bi-arrow-bar-left-nav-menu"
+                                  aria-hidden="true"></span>
+                            Logout
                         </button>
                     </form>
                 </div>
             </Authorized>
+
             <NotAuthorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
+                    <NavLink class="nav-link"
+                             href="Account/Register">
+                        <span class="bi bi-person-nav-menu"
+                              aria-hidden="true"></span>
+                        Register
                     </NavLink>
                 </div>
+
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                    <NavLink class="nav-link"
+                             href="Account/Login">
+                        <span class="bi bi-person-badge-nav-menu"
+                              aria-hidden="true"></span>
+                        Login
                     </NavLink>
                 </div>
             </NotAuthorized>
         </AuthorizeView>
+
     </nav>
 </div>
 
@@ -86,13 +139,19 @@
 
     protected override void OnInitialized()
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        currentUrl = NavigationManager
+            .ToBaseRelativePath(NavigationManager.Uri);
+
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    private void OnLocationChanged(
+        object? sender,
+        LocationChangedEventArgs e)
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        currentUrl = NavigationManager
+            .ToBaseRelativePath(e.Location);
+
         StateHasChanged();
     }
 
@@ -101,4 +160,3 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
-
