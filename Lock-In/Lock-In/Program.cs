@@ -61,6 +61,7 @@ builder.Services.AddScoped<RegistroEstudiantesService>();
 builder.Services.AddScoped<UsuariosService>();
 builder.Services.AddScoped<CasillerosService>();
 builder.Services.AddScoped<SolicitudesService>();
+builder.Services.AddScoped<AsignacionesService>();
 builder.Services.AddBlazorBootstrap();
 
 var app = builder.Build();

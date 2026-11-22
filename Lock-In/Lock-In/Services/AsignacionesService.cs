@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace Lock_In.Services
 {
-    public class AsignacionService(IDbContextFactory<Contexto> contextFactory) : IServiceResult<Asignaciones, int>
+    public class AsignacionesService(IDbContextFactory<Contexto> contextFactory) : IServiceResult<Asignaciones, int>
     {
         public async Task<Result> Guardar(Asignaciones asignacion)
         {
@@ -31,7 +31,7 @@ namespace Lock_In.Services
             existe.Estado = asignacion.Estado;
 
             var guardado = await contexto.SaveChangesAsync() > 0;
-            return guardado ? Result.Success(true) : Result.Failure(new Error("Error al Guardar", "No se pudo guardar la asignación."));
+            return guardado ? Result.Success() : Result.Failure(new Error("Error al Guardar", "No se pudo guardar la asignación."));
         }
 
         public async Task<Result<Asignaciones?>> Buscar(int asignacionId)
@@ -193,7 +193,7 @@ namespace Lock_In.Services
                 : Result.Failure(new Error("Error al guardar", "No se pudo finalizar la asignación."));
         }
 
-        public async Task<int> ContarLlavesPerdidasAsync(int estudianteId)
+        public async Task<int> ContarLlavesPerdidas(int estudianteId)
         {
             await using var contexto = await contextFactory.CreateDbContextAsync();
 
@@ -203,9 +203,26 @@ namespace Lock_In.Services
                 .CountAsync();
         }
 
-        public async Task<bool> TienePenalizacionPorLlavesPerdidasAsync(int estudianteId)
+        public async Task<bool> TienePenalizacionPorLlavesPerdidas(int estudianteId)
         {
-            return await ContarLlavesPerdidasAsync(estudianteId) >= 3;
+            return await ContarLlavesPerdidas(estudianteId) >= 3;
+        }
+
+        public async Task<decimal> CalcularMontoLlavePerdida(int estudianteId)
+        {
+            int cantidadLlavesPerdidas = await ContarLlavesPerdidas(estudianteId);
+
+            if (cantidadLlavesPerdidas <= 0)
+            {
+                return 0m;
+            }
+
+            decimal montoBase = 300m;
+            decimal recargoPorBloque = 250m;
+
+            int bloquesAdicionales = (cantidadLlavesPerdidas - 1) / 3;
+
+            return montoBase + ((decimal)bloquesAdicionales * recargoPorBloque);
         }
 
     }
