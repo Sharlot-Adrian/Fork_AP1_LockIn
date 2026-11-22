@@ -114,10 +114,14 @@
 @code{
     public int FilaSeleccionada { get; set; } = 1;
     public string FiltroEstado { get; set; } = string.Empty;
-    public Casilleros casillero { get; set; } = new Casilleros();
     private List<Casilleros> listaCasilleros = new List<Casilleros>();
 
     protected override async Task OnInitializedAsync()
+    {
+        await CargarCasilleros();
+    }
+
+    private async Task CargarCasilleros()
     {
         var result = await casillerosService.GetList(c => c.CasilleroId > 0);
         if (result.IsSuccess && result.Value != null)
@@ -133,11 +137,7 @@
 
     public async Task Buscar()
     {
-        var result = await casillerosService.GetList(c => c.Fila == FilaSeleccionada);
-        if (result.IsSuccess && result.Value !=  null)
-        {
-            listaCasilleros = result.Value;
-        }
+        await CargarCasilleros();
     }
 
     private IEnumerable<Casilleros> ObtenerCasillerosFiltrados()

@@ -49,6 +49,16 @@ namespace Lock_In.Services
         private async Task<bool> Insertar(Casilleros casillero)
         {
             await using var contexto = await contextFactory.CreateDbContextAsync();
+            
+            casillero.Estado = EstadoCasillero.Disponible;
+            casillero.LlaveDisponible = true;
+            casillero.Llave = new Llaves
+            {
+                Numero = casillero.Numero,
+                Estado = EstadoLlave.Disponible,
+                Activa = true
+            };
+
             contexto.Casilleros.Add(casillero);
             return await contexto.SaveChangesAsync() > 0;
         }
@@ -66,6 +76,7 @@ namespace Lock_In.Services
         {
             await using var contexto = await contextFactory.CreateDbContextAsync();
             return await contexto.Casilleros
+                .Include(c => c.Llave)
                 .Where(criterio)
                 .AsNoTracking()
                 .ToListAsync();
@@ -74,9 +85,44 @@ namespace Lock_In.Services
         private async Task<bool> Modificar(Casilleros casillero)
         {
             await using var contexto = await contextFactory.CreateDbContextAsync();
+            var llave = await contexto.Llaves.FirstOrDefaultAsync(l => l.CasilleroId == casillero.CasilleroId);
+            if (llave != null)
+            {
+                switch (casillero.Estado)
+                {
+                    case EstadoCasillero.Inaccesible:
+                        {
+                            casillero.LlaveDisponible = false;
+                            if(casillero.MotivoInaccesibilidad == "Llave Pérdida")
+                            {
+                                llave.Estado = EstadoLlave.Perdida;
+                                llave.Activa = false;
+                                contexto.Llaves.Update(llave);
+                            }
+                            break;
+                        }
+                    case EstadoCasillero.Disponible:
+                        {
+                            llave.Estado = EstadoLlave.Disponible;
+                            llave.Activa = true;
+                            casillero.LlaveDisponible = true;
+                            contexto.Llaves.Update(llave);
+                            break;
+                        }
+                    case EstadoCasillero.Ocupado:
+                        {
+
+                            llave.Estado = EstadoLlave.Entregada;
+                            casillero.LlaveDisponible = false;
+                            contexto.Llaves.Update(llave);
+                            break;
+                        }
+                }
+              
+            }
+            casillero.Llave = null;
             contexto.Casilleros.Update(casillero);
             return await contexto.SaveChangesAsync() > 0;
-
         }
 
         public async Task<bool> ExisteCasillero(int fila, int numero, int casilleroId)
@@ -89,7 +135,9 @@ namespace Lock_In.Services
         public async Task<Result<Casilleros?>> Buscar(int casilleroId)
         {
             await using var contexto = await contextFactory.CreateDbContextAsync();
-            return await contexto.Casilleros.FirstOrDefaultAsync(c => c.CasilleroId == casilleroId);
+            return await contexto.Casilleros
+                .Include(c => c.Llave)
+                .FirstOrDefaultAsync(c => c.CasilleroId == casilleroId);
         }
     }
 }

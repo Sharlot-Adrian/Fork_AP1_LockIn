@@ -31,7 +31,7 @@
                 <div class="col-3">
                     <InputSelect class="form-select" @bind-Value="Filtro">
                         <option value="" selected disabled>Elija una opci&oacute;n</option>
-                        <option value="Id">ID</option>
+                        <option value="Id">Id</option>
                         <option value="Fila">Fila</option>
                     </InputSelect>
                 </div>
@@ -84,13 +84,13 @@
 
     private async Task Buscar()
     {
-        if (Filtro == "ID")
+        if (ValorFiltro.Trim() != "" && Filtro == "Id")
         {
             int idBuscado = int.Parse(ValorFiltro);
             var result= await casillerosService.GetList(c => c.CasilleroId == idBuscado);
             itemsQueryable = result.Value.AsQueryable();
         }
-        else if (Filtro == "Fila")
+        else if (ValorFiltro.Trim() != "" && Filtro == "Fila")
         {
             int filaBuscada = int.Parse(ValorFiltro);
             var result = await casillerosService.GetList(c => c.Fila == filaBuscada);
