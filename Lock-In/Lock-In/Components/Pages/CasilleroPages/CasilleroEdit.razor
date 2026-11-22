@@ -124,14 +124,22 @@
 
     private void OnEstadoCambio()
     {
+        if(Casillero == null)
+            return;
+
         if (Casillero.Estado.Equals(EstadoCasillero.Disponible))
         {
             Casillero.LlaveDisponible = true;
-            Casillero.MotivoInaccesibilidad = string.Empty;
+            Casillero.MotivoInaccesibilidad = null;
         }
         else if (Casillero.Estado.Equals(EstadoCasillero.Ocupado))
         {
-            Casillero.MotivoInaccesibilidad = string.Empty;
+            Casillero.LlaveDisponible = false;
+            Casillero.MotivoInaccesibilidad = null;
+
+        }else if (Casillero.Estado.Equals(EstadoCasillero.Inaccesible))
+        {
+            Casillero.LlaveDisponible = false;
         }
     }
 

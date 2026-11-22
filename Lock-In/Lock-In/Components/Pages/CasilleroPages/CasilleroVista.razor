@@ -157,7 +157,6 @@
 @code{
     public int FilaSeleccionada { get; set; } = 1;
     public string FiltroEstado { get; set; } = string.Empty;
-    public Casilleros casillero { get; set; } = new Casilleros();
     private List<Casilleros> listaCasilleros = new List<Casilleros>();
     public Casilleros? CasilleroSeleccionado { get; set; }
     private bool EsEstudiante = false;
@@ -168,11 +167,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarCasilleros();
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         EsEstudiante = authState.User.IsInRole("Estudiante");
         usuarioId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
         await CargarCasilleros();
-
     }
 
     private async Task CargarCasilleros()
@@ -196,6 +195,7 @@
         await CargarCasilleros();
         CasilleroSeleccionado = null;
         mensajeSolicitud = null;
+
     }
 
     private IEnumerable<Casilleros> ObtenerCasillerosFiltrados()

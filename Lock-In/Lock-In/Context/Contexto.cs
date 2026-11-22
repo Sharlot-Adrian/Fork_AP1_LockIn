@@ -58,5 +58,16 @@ public class Contexto : IdentityDbContext<ApplicationUser>
             .WithMany(c => c.Solicitudes)
             .HasForeignKey(s => s.CasilleroId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        //Casilleros
+        modelBuilder.Entity<Casilleros>()
+            .HasOne(c => c.Llave)
+            .WithOne(l => l.Casillero)
+            .HasForeignKey<Llaves>(l => l.CasilleroId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Llaves>()
+            .HasIndex(l => l.CasilleroId)
+            .IsUnique();
     }
 }

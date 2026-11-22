@@ -15,7 +15,7 @@ public class Casilleros
     public ICollection<Solicitudes> Solicitudes { get; set; } = new List<Solicitudes>();
     public ICollection<Asignaciones> Asignaciones { get; set; } = new List<Asignaciones>();
     public bool LlaveDisponible { get; set; } = true;
-
+    public Llaves? Llave { get; set; }
 }
 
 public enum EstadoCasillero{
