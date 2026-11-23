@@ -19,10 +19,10 @@ jobs:
         dotnet-version: 11.0.x
 
     - name: Restore dependencies
-      run: dotnet restore Lock-In.slnx
+      run: dotnet restore 
 
     - name: Build
-      run: dotnet build Lock-In.slnx --configuration Release --no-restore
+      run: dotnet build  --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test Lock-In.slnx --configuration Release --no-build --verbosity normal-no-restore
+      run: dotnet test --configuration Release --no-build --verbosity normal-no-restore
