@@ -23,7 +23,7 @@ jobs:
       run: dotnet restore Lock-In/Lock-In.slnx
       
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build Lock-In/Lock-In.slnx --no-restore
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test Lock-In/Lock-In.slnx --no-build --verbosity normal
