@@ -32,8 +32,8 @@ var connectionString = builder.Configuration.GetConnectionString("ConStr") ?? th
 
 //Cconexion con el Contexto
 builder.Services.AddDbContextFactory<Contexto>(options =>
-    options.UseSqlServer(connectionString));
-
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("ConStr")));
 //Roles de Identity
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
