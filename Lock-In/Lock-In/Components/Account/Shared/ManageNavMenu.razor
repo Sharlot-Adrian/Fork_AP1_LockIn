@@ -3,38 +3,149 @@
 
 @inject SignInManager<ApplicationUser> SignInManager
 
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">Profile</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Email">Email</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/ChangePassword">Password</NavLink>
-    </li>
+<nav class="manage-navigation">
+
+    <NavLink class="manage-nav-link"
+             href="Account/Manage"
+             Match="NavLinkMatch.All">
+        <i class="bi bi-person-circle"></i>
+        <span>Mi perfil</span>
+    </NavLink>
+
+    <NavLink class="manage-nav-link"
+             href="Account/Manage/Email">
+        <i class="bi bi-envelope"></i>
+        <span>Correo electrónico</span>
+    </NavLink>
+
+    <NavLink class="manage-nav-link"
+             href="Account/Manage/ChangePassword">
+        <i class="bi bi-key"></i>
+        <span>Contraseña</span>
+    </NavLink>
+
     @if (hasExternalLogins)
     {
-        <li class="nav-item">
-            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">External logins</NavLink>
-        </li>
+        <NavLink class="manage-nav-link"
+                 href="Account/Manage/ExternalLogins">
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span>Inicios de sesión externos</span>
+        </NavLink>
     }
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">Two-factor authentication</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Passkeys">Passkeys</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/PersonalData">Personal data</NavLink>
-    </li>
-</ul>
+
+    <div class="manage-nav-divider"></div>
+
+    <div class="manage-nav-section">
+        Seguridad
+    </div>
+
+    <NavLink class="manage-nav-link"
+             href="Account/Manage/TwoFactorAuthentication">
+        <i class="bi bi-shield-lock"></i>
+        <span>Autenticación en dos pasos</span>
+    </NavLink>
+
+    <NavLink class="manage-nav-link"
+             href="Account/Manage/Passkeys">
+        <i class="bi bi-fingerprint"></i>
+        <span>Claves de acceso</span>
+    </NavLink>
+
+    <div class="manage-nav-divider"></div>
+
+    <div class="manage-nav-section">
+        Privacidad
+    </div>
+
+    <NavLink class="manage-nav-link"
+             href="Account/Manage/PersonalData">
+        <i class="bi bi-database-lock"></i>
+        <span>Datos personales</span>
+    </NavLink>
+
+</nav>
+
+<style>
+    .manage-navigation {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+        .manage-navigation .manage-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--lock-text);
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+            .manage-navigation .manage-nav-link i {
+                font-size: 1.15rem;
+                width: 22px;
+                text-align: center;
+            }
+
+            .manage-navigation .manage-nav-link:hover {
+                background: var(--lock-background);
+                color: var(--lock-primary);
+                transform: translateX(3px);
+            }
+
+            .manage-navigation .manage-nav-link.active {
+                background: var(--lock-primary);
+                color: white;
+                font-weight: 600;
+                box-shadow: 0 3px 9px rgba(63,73,165,0.18);
+            }
+
+                .manage-navigation .manage-nav-link.active i {
+                    color: var(--lock-accent);
+                }
+
+    .manage-nav-divider {
+        height: 1px;
+        background: var(--lock-secondary);
+        margin: 12px 5px;
+    }
+
+    .manage-nav-section {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--lock-primary);
+        font-weight: 700;
+        padding: 4px 14px 8px;
+    }
+
+    @@media (max-width: 991px) {
+        .manage-navigation {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .manage-nav-divider,
+        .manage-nav-section {
+            display: none;
+        }
+
+        .manage-navigation .manage-nav-link:hover {
+            transform: none;
+        }
+    }
+</style>
 
 @code {
     private bool hasExternalLogins;
 
     protected override async Task OnInitializedAsync()
     {
-        hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+        hasExternalLogins =
+            (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
     }
 }

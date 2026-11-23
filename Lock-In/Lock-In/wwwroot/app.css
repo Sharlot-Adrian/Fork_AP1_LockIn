@@ -58,3 +58,195 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+
+/* ==================================
+   PALETA DE COLORES - LOCK-IN
+   ================================== */
+
+:root {
+    --lock-primary: #3F49A5;
+    --lock-secondary: #B6C8DF;
+    --lock-accent: #EDBD60;
+    --lock-danger: #AB3730;
+    --lock-background: #FFF8EF;
+    --lock-surface: #FFFFFF;
+    --lock-text: #28305F;
+}
+
+
+/* =========================================
+   LOCK-IN - ESTILOS GLOBALES
+   ========================================= */
+
+body {
+    background-color: var(--lock-background);
+    color: var(--lock-text);
+}
+
+/* TITULOS */
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--lock-primary);
+}
+
+/* TARJETAS */
+
+.card {
+    background-color: var(--lock-surface);
+    border: 1px solid #e1e6f0;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(63,73,165,0.06);
+}
+
+.card-header {
+    background-color: var(--lock-primary);
+    color: white;
+    border-radius: 14px 14px 0 0;
+    padding: 15px 20px;
+}
+
+    .card-header h1,
+    .card-header h2,
+    .card-header h3,
+    .card-header h4,
+    .card-header h5 {
+        color: white;
+    }
+
+/* BOTONES */
+
+.btn-primary {
+    background-color: var(--lock-primary);
+    border-color: var(--lock-primary);
+    color: white;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: #303A89;
+        border-color: #303A89;
+        color: white;
+    }
+
+.btn-danger {
+    background-color: var(--lock-danger);
+    border-color: var(--lock-danger);
+    color: white;
+}
+
+    .btn-danger:hover {
+        background-color: #8F2925;
+        border-color: #8F2925;
+    }
+
+.btn-warning {
+    background-color: var(--lock-accent);
+    border-color: var(--lock-accent);
+    color: #28305F;
+}
+
+.btn-outline-primary {
+    color: var(--lock-primary);
+    border-color: var(--lock-primary);
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--lock-primary);
+        color: white;
+    }
+
+.btn {
+    border-radius: 9px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* FORMULARIOS */
+
+.form-control,
+.form-select {
+    border: 1px solid var(--lock-secondary);
+    border-radius: 9px;
+    padding: 10px 13px;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--lock-primary);
+        box-shadow: 0 0 0 0.2rem rgba(63,73,165,0.12);
+    }
+
+.form-label {
+    color: var(--lock-text);
+    font-weight: 600;
+}
+
+/* TABLAS */
+
+.table {
+    --bs-table-color: var(--lock-text);
+    --bs-table-bg: transparent;
+    --bs-table-border-color: #e1e6f0;
+}
+
+    .table thead th {
+        background-color: var(--lock-primary);
+        color: white;
+        font-weight: 600;
+        padding: 13px;
+    }
+
+    .table tbody td {
+        padding: 12px;
+        vertical-align: middle;
+    }
+
+.table-hover tbody tr:hover {
+    background-color: #f0f2fa;
+}
+
+/* MODALES */
+
+.modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.modal-header {
+    background-color: var(--lock-primary);
+    color: white;
+}
+
+.modal-title {
+    color: white;
+}
+
+/* PAGINACION */
+
+.page-link {
+    color: var(--lock-primary);
+}
+
+.page-item.active .page-link {
+    background-color: var(--lock-primary);
+    border-color: var(--lock-primary);
+}
+
+/* ENLACES */
+
+a {
+    color: var(--lock-primary);
+}
+
+    a:hover {
+        color: #303A89;
+    }
+
+/* ACCESIBILIDAD */
+
+:focus-visible {
+    outline: 2px solid var(--lock-primary);
+    outline-offset: 2px;
+}

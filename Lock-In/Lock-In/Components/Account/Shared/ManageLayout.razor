@@ -1,17 +1,153 @@
 ﻿@inherits LayoutComponentBase
 @layout Lock_In.Components.Layout.MainLayout
 
-<h1>Manage your account</h1>
+<div class="container-fluid py-4 px-3 px-lg-4 manage-container">
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
-    <div class="row">
-        <div class="col-lg-3">
-            <ManageNavMenu />
-        </div>
-        <div class="col-lg-9">
-            @Body
+    <div class="manage-header mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="manage-header-icon">
+                <i class="bi bi-person-gear"></i>
+            </div>
+
+            <div>
+                <h2 class="mb-1 fw-bold">Configuración de cuenta</h2>
+                <p class="mb-0">
+                    Administra tu información personal y la seguridad de tu cuenta.
+                </p>
+            </div>
         </div>
     </div>
+
+    <div class="row g-4">
+
+        <div class="col-12 col-lg-3">
+            <div class="card manage-sidebar shadow-sm border-0">
+                <div class="card-body p-3">
+
+                    <div class="manage-sidebar-title mb-3">
+                        <i class="bi bi-grid me-2"></i>
+                        Mi cuenta
+                    </div>
+
+                    <ManageNavMenu />
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-9">
+            <div class="card manage-content shadow-sm border-0">
+                <div class="card-body p-4">
+                    @Body
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
+
+<style>
+    .manage-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .manage-header {
+        background: linear-gradient( 135deg, var(--lock-primary), #5964BD );
+        color: white;
+        padding: 28px;
+        border-radius: 16px;
+        box-shadow: 0 5px 18px rgba(63,73,165,0.15);
+    }
+
+        .manage-header h2 {
+            font-size: 1.65rem;
+            color: white;
+        }
+
+        .manage-header p {
+            color: #F0F2FF;
+            font-size: 0.92rem;
+        }
+
+    .manage-header-icon {
+        width: 58px;
+        height: 58px;
+        background: rgba(255,255,255,0.15);
+        color: var(--lock-accent);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .manage-sidebar,
+    .manage-content {
+        border-radius: 16px;
+        background: var(--lock-surface);
+    }
+
+    .manage-sidebar-title {
+        color: var(--lock-primary);
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--lock-secondary);
+    }
+
+    .manage-content {
+        min-height: 450px;
+    }
+
+        .manage-content h3,
+        .manage-content h4 {
+            color: var(--lock-primary);
+            font-weight: 700;
+        }
+
+        .manage-content .form-control {
+            border-radius: 9px;
+            border: 1px solid var(--lock-secondary);
+            padding: 10px 13px;
+        }
+
+            .manage-content .form-control:focus {
+                border-color: var(--lock-primary);
+                box-shadow: 0 0 0 0.2rem rgba(63,73,165,0.12);
+            }
+
+        .manage-content .btn-primary {
+            background: var(--lock-primary);
+            border-color: var(--lock-primary);
+            border-radius: 9px;
+            padding: 10px 18px;
+            font-weight: 600;
+        }
+
+            .manage-content .btn-primary:hover {
+                background: #303A89;
+                border-color: #303A89;
+            }
+
+    @@media (max-width: 768px) {
+        .manage-header {
+            padding: 20px;
+        }
+
+            .manage-header h2 {
+                font-size: 1.3rem;
+            }
+
+        .manage-header-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .manage-content .card-body {
+            padding: 18px !important;
+        }
+    }
+</style>

@@ -17,13 +17,28 @@
         <p>
             <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
         </p>
-        <form action="Account/Manage/DownloadPersonalData" method="post">
-            <AntiforgeryToken />
-            <button class="btn btn-primary" type="submit">Download</button>
-        </form>
-        <p>
-            <a href="Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
-        </p>
+        
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+
+            <form action="Account/Manage/DownloadPersonalData"
+                  method="post">
+                <AntiforgeryToken />
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    <i class="bi bi-download me-2"></i>
+                    Descargar datos
+                </button>
+            </form>
+
+            <a href="Account/Manage/DeletePersonalData"
+               class="btn btn-danger">
+                <i class="bi bi-trash me-2"></i>
+                Eliminar cuenta
+            </a>
+
+        </div>
+
     </div>
 </div>
 

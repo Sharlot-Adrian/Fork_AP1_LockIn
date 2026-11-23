@@ -140,27 +140,27 @@
                     </NavLink>
                 </div>
 
+                
+                
                 <div class="nav-item px-3">
-                    <form action="Account/Logout"
-                          method="post">
+                    <form action="/Account/Logout"
+                          method="post"
+                          data-enhance="false">
 
                         <AntiforgeryToken />
 
                         <input type="hidden"
                                name="ReturnUrl"
-                               value="@currentUrl" />
+                               value="/Account/Login" />
 
                         <button type="submit"
-                                class="nav-link">
-
-                            <span class="bi bi-arrow-bar-left-nav-menu"
-                                  aria-hidden="true"></span>
-                            Logout
-
+                                class="nav-link w-100 text-start">
+                            <i class="bi bi-box-arrow-right me-2"></i>
+                            Cerrar sesión
                         </button>
+
                     </form>
                 </div>
-
             </Authorized>
         </AuthorizeView>
 
