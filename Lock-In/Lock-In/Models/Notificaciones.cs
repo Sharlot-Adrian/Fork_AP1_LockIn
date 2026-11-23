@@ -24,4 +24,6 @@ public class Notificaciones
     public int? SolicitudId { get; set; }
     [ForeignKey(nameof(SolicitudId))]
     public Solicitudes? Solicitud { get; set; }
+
+    public string? Url { get; set; }
 }

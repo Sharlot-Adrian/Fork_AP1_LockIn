@@ -1,0 +1,350 @@
+﻿@page "/Estudiante/MisSolicitudes"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Estudiante")]
+
+@using Lock_In.Models
+@using Lock_In.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject SolicitudesService solicitudesService
+@inject NavigationManager navigationManager
+
+<PageTitle>Mis Solicitudes - Lock-In</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 style="color: var(--lock-primary);">
+                <i class="bi bi-clipboard-check me-2"></i>
+                Mis Solicitudes
+            </h3>
+            <p class="text-muted mb-0">
+                Consulta el estado de tus solicitudes de casilleros.
+            </p>
+        </div>
+
+        <a href="/" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>
+            Nueva solicitud
+        </a>
+    </div>
+
+    @if (cargando)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-3">Cargando solicitudes...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">
+            @error
+        </div>
+    }
+    else if (solicitudes.Count == 0)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <h5 class="mt-3">No tienes solicitudes</h5>
+                <p class="text-muted">
+                    Selecciona un casillero disponible para realizar tu primera solicitud.
+                </p>
+                <a href="/" class="btn btn-primary">
+                    Ver casilleros
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+       
+      
+        <div class="card shadow-lg">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title m-0">
+                    Mis Solicitudes
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <QuickGrid Items="solicitudes.AsQueryable()"
+                               Class="table table-hover align-middle text-center mt-3">
+
+                        <PropertyColumn Property="s => s.SolicitudId"
+                                        Title="ID"
+                                        Sortable="true" />
+
+                        <TemplateColumn Title="Casillero">
+                            <span class="fw-semibold">
+                                Fila @context.Casillero?.Fila
+                            </span>
+                            <span class="text-muted">
+                                - N° @context.Casillero?.Numero
+                            </span>
+                        </TemplateColumn>
+
+                        <TemplateColumn Title="Fecha">
+                            @context.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy")
+                        </TemplateColumn>
+
+                        <TemplateColumn Title="Estado">
+                            <span class="badge @ClaseEstado(context.Estado) px-3 py-2">
+                                @context.Estado
+                            </span>
+                        </TemplateColumn>
+
+                        <TemplateColumn Title="Respuesta">
+                            @if (context.FechaRespuesta.HasValue)
+                            {
+                                @context.FechaRespuesta.Value.ToLocalTime().ToString("dd/MM/yyyy")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Pendiente</span>
+                            }
+                        </TemplateColumn>
+
+                        <TemplateColumn Title="Motivo">
+                            @if (!string.IsNullOrWhiteSpace(context.MotivoRechazo))
+                            {
+                                <span title="@context.MotivoRechazo">
+                                    @context.MotivoRechazo
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </TemplateColumn>
+
+                        <TemplateColumn Title="Opciones">
+                            @if (context.Estado == EstadoSolicitud.Pendiente)
+                            {
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm"
+                                            title="Cancelar solicitud"
+                                            disabled="@procesando"
+                                            @onclick="() => SeleccionarCancelacion(context)">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sin acciones</span>
+                            }
+                        </TemplateColumn>
+
+                    </QuickGrid>
+
+                </div>
+
+                @if (solicitudes.Count == 0)
+                {
+                    <p class="text-center text-muted mt-3">
+                        No se encontraron solicitudes.
+                    </p>
+                }
+
+            </div>
+
+            <div class="card-footer d-flex justify-content-between">
+                <label>
+                    Cantidad: @solicitudes.Count
+                </label>
+
+                <label>
+                    Pendientes:
+                    @solicitudes.Count(s => s.Estado == EstadoSolicitud.Pendiente)
+                </label>
+            </div>
+
+        </div>
+
+    }
+
+    @if (solicitudCancelar is not null)
+    {
+        <div class="lock-confirm-overlay">
+            <div class="card shadow-lg lock-confirm-dialog">
+                <div class="card-header text-white"
+                     style="background: var(--lock-primary);">
+                    <strong>Confirmar cancelación</strong>
+                </div>
+
+                <div class="card-body">
+                    <p>
+                        ¿Deseas cancelar la solicitud
+                        <strong>#@solicitudCancelar.SolicitudId</strong>?
+                    </p>
+
+                    <p class="text-muted small">
+                        Esta acción no se puede deshacer.
+                    </p>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-secondary"
+                                disabled="@procesando"
+                                @onclick="CerrarConfirmacion">
+                            Volver
+                        </button>
+
+                        <button class="btn btn-danger"
+                                disabled="@procesando"
+                                @onclick="ConfirmarCancelacion">
+                            @(procesando ? "Cancelando..." : "Sí, cancelar")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private List<Solicitudes> solicitudes = new();
+    private Solicitudes? solicitudCancelar;
+    private Estudiantes? estudiante;
+
+    private bool cargando = true;
+    private bool procesando = false;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (AuthenticationStateTask is null)
+            {
+                error = "No se pudo obtener la sesión.";
+                return;
+            }
+
+            var estado = await AuthenticationStateTask;
+
+            var usuarioId = estado.User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(usuarioId))
+            {
+                error = "Debes iniciar sesión.";
+                return;
+            }
+
+            estudiante = await solicitudesService
+                .BuscarEstudiantePorUsuario(usuarioId);
+
+            if (estudiante is null)
+            {
+                error = "No se encontró tu perfil de estudiante.";
+                return;
+            }
+
+            await CargarSolicitudes();
+        }
+        catch (Exception)
+        {
+            error = "No se pudieron cargar las solicitudes.";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CargarSolicitudes()
+    {
+        if (estudiante is null)
+            return;
+
+        var resultado = await solicitudesService.GetList(
+            s => s.EstudianteId == estudiante.EstudianteId);
+
+        if (resultado.IsSuccess)
+        {
+            solicitudes = resultado.Value ?? new();
+        }
+        else
+        {
+            error = "No se pudieron consultar las solicitudes.";
+        }
+    }
+
+    private static string ClaseEstado(EstadoSolicitud estado)
+    {
+        return estado switch
+        {
+            EstadoSolicitud.Pendiente => "bg-warning text-dark",
+            EstadoSolicitud.Aprobada => "bg-success",
+            EstadoSolicitud.Rechazada => "bg-danger",
+            EstadoSolicitud.Cancelada => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    private void SeleccionarCancelacion(Solicitudes solicitud)
+    {
+        solicitudCancelar = solicitud;
+    }
+
+    private void CerrarConfirmacion()
+    {
+        solicitudCancelar = null;
+    }
+
+    private async Task ConfirmarCancelacion()
+    {
+        if (solicitudCancelar is null || estudiante is null || procesando)
+            return;
+
+        procesando = true;
+
+        try
+        {
+            var resultado = await solicitudesService.Cancelar(
+                solicitudCancelar.SolicitudId,
+                estudiante.EstudianteId);
+
+            if (resultado.IsSuccess)
+            {
+                solicitudCancelar = null;
+                error = null;
+                await CargarSolicitudes();
+            }
+            else
+            {
+                error = "No se pudo cancelar la solicitud.";
+            }
+        }
+        catch (Exception)
+        {
+            error = "Ocurrió un error al cancelar la solicitud.";
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private PaginationState paginacion = new()
+    {
+        ItemsPerPage = 10
+    };
+
+    private GridSort<Solicitudes> ordenFecha =
+        GridSort<Solicitudes>.ByAscending(s => s.FechaSolicitud);
+}

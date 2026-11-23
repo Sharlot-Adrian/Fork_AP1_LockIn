@@ -51,6 +51,18 @@
             </Authorized>
         </AuthorizeView>
 
+        <AuthorizeView Roles="Estudiante">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link"
+                             href="/Estudiante/MisSolicitudes">
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Mis Solicitudes
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
         @* ========================================= *@
         @* ADMINISTRADOR                             *@
         @* ========================================= *@

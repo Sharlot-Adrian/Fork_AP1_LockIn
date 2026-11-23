@@ -1,0 +1,173 @@
+﻿
+@inject NotificacionesTiempoRealService tiempoRealService
+@inject NotificacionesService notificacionesService
+@inject NavigationManager navigationManager
+
+@rendermode InteractiveServer
+
+@implements IDisposable
+
+<div class="position-relative">
+
+    <button class="btn position-relative"
+            style="color: var(--lock-primary);"
+            @onclick="Alternar">
+
+        <i class="bi bi-bell-fill fs-5"></i>
+
+        @if (cantidadNoLeidas > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                  style="background-color: var(--lock-danger);">
+                @cantidadNoLeidas
+            </span>
+        }
+    </button>
+
+    @if (mostrar)
+    {
+        <div class="card shadow position-absolute end-0 mt-2"
+             style="width: 340px; max-width: 90vw; z-index: 1050;">
+
+            <div class="card-header d-flex justify-content-between align-items-center"
+                 style="background-color: var(--lock-primary); color: white;">
+
+                <strong>Notificaciones</strong>
+
+                <button class="btn btn-sm btn-light"
+                        @onclick="MarcarTodas">
+                    Marcar todas
+                </button>
+            </div>
+
+            <div class="card-body p-0"
+                 style="max-height: 350px; overflow-y: auto;">
+
+                @if (notificaciones.Count == 0)
+                {
+                    <p class="text-center text-muted p-3 mb-0">
+                        No tienes notificaciones.
+                    </p>
+                }
+                else
+                {
+                    @foreach (var notificacion in notificaciones)
+                    {
+                        <button type="button"
+                                class="w-100 text-start border-0 border-bottom p-3"
+                                style="background-color: @(notificacion.Leida ? "white" : "#FFF8EF");"
+                                @onclick="() => AbrirNotificacion(notificacion)">
+
+                            <div class="fw-bold"
+                                 style="color: var(--lock-primary);">
+                                @notificacion.Titulo
+                            </div>
+
+                            <div class="small">
+                                @notificacion.Mensaje
+                            </div>
+
+                            <small class="text-muted">
+                                @notificacion.Fecha.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                            </small>
+
+                        </button>
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private List<Notificaciones> notificaciones = new();
+    private string? usuarioId;
+    private int cantidadNoLeidas;
+    private bool mostrar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationStateTask is null)
+            return;
+
+        var estado = await AuthenticationStateTask;
+        usuarioId = estado.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!string.IsNullOrEmpty(usuarioId))
+            await CargarNotificaciones();
+
+        tiempoRealService.NotificacionCreada += RecibirNotificacion;
+    }
+
+
+    private async Task RecibirNotificacion(string destinatarioId)
+    {
+        if (usuarioId != destinatarioId)
+            return;
+
+        await InvokeAsync(async () =>
+        {
+            await CargarNotificaciones();
+            StateHasChanged();
+        });
+    }
+
+
+    private async Task CargarNotificaciones()
+    {
+        if (string.IsNullOrEmpty(usuarioId))
+            return;
+
+        notificaciones =
+            await notificacionesService.ObtenerPorUsuario(usuarioId);
+
+        cantidadNoLeidas =
+            await notificacionesService.ContarNoLeidas(usuarioId);
+    }
+
+    private async Task Alternar()
+    {
+        mostrar = !mostrar;
+
+        if (mostrar)
+            await CargarNotificaciones();
+    }
+
+    private async Task AbrirNotificacion(Notificaciones notificacion)
+    {
+        if (string.IsNullOrEmpty(usuarioId))
+            return;
+
+        await notificacionesService.MarcarComoLeida(
+            notificacion.NotificacionId, usuarioId);
+
+        await CargarNotificaciones();
+
+        mostrar = false;
+
+        if (!string.IsNullOrWhiteSpace(notificacion.Url) &&
+            notificacion.Url.StartsWith("/") &&
+            !notificacion.Url.StartsWith("//") &&
+            !notificacion.Url.Contains('\\'))
+        {
+            navigationManager.NavigateTo(notificacion.Url);
+        }
+    }
+
+    private async Task MarcarTodas()
+    {
+        if (string.IsNullOrEmpty(usuarioId))
+            return;
+
+        await notificacionesService.MarcarTodasComoLeidas(usuarioId);
+        await CargarNotificaciones();
+    }
+
+    public void Dispose()
+    {
+        tiempoRealService.NotificacionCreada -= RecibirNotificacion;
+    }
+}
