@@ -20,10 +20,6 @@
 
             <div class="lockin-brand">
 
-                <img src="/images/lockin-robot.png"
-                     alt="Robot Lock-in"
-                     class="lockin-robot" />
-
                 <h1 class="lockin-logo">
                     <span class="logo-blue">L</span><span class="logo-red">O</span><span class="logo-yellow">C</span><span class="logo-light">K</span><span class="logo-blue">-</span><span class="logo-red">I</span><span class="logo-yellow">N</span>
                 </h1>
@@ -75,18 +71,27 @@
                 </div>
 
                 @* Carrera *@
-                <div class="col-md-6">
-                    <label class="form-label">
-                        <strong>Carrera</strong>
+               
+                <div class="mb-3">
+                    <label class="form-label" for="carrera">
+                        Carrera
                     </label>
 
-                    <InputText @bind-Value="Input.Carrera"
-                               id="Carrera"
-                               class="form-control"
-                               placeholder="Carrera" />
+                    <InputSelect id="carrera"
+                                 @bind-Value="Input.Carrera"
+                                 class="form-select"
+                                 aria-required="true">
 
-                    <ValidationMessage For="() => Input.Carrera"
-                                       class="text-danger" />
+                        <option value="">Seleccione una carrera</option>
+
+                        @foreach (var carrera in Carreras)
+                        {
+                            <option value="@carrera">@carrera</option>
+                        }
+
+                    </InputSelect>
+
+                    <ValidationMessage For="() => Input.Carrera" />
                 </div>
 
                 @* Correo electrónico *@
@@ -236,8 +241,8 @@
         [Required]
         public string Matricula { get; set; } = "";
 
-        [Required]
-        public string Carrera { get; set; } = "";
+        [Required(ErrorMessage = "Debe seleccionar una carrera.")]
+        public string Carrera { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
@@ -252,4 +257,21 @@
             ErrorMessage = "Las contraseñas no coinciden.")]
         public string ConfirmPassword { get; set; } = "";
     }
+
+
+    private readonly List<string> Carreras = new()
+{
+     "Administración de Empresas",
+    "Arquitectura",
+    "Contabilidad",
+    "Derecho",
+    "Educación",
+    "Enfermería",
+    "Ingeniería Civil",
+    "Ingeniería en Sistemas y Computación",
+    "Medicina",
+    "Mercadeo",
+    "Odontología",
+    "Psicología"
+};
 }

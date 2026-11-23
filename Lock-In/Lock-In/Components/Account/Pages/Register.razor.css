@@ -20,7 +20,7 @@
 
 .register-card {
     width: 100%;
-    max-width: 460px;
+    max-width: 480px;
     background-color: #fffaf8;
     padding: 25px 25px;
     border-radius: 32px;
@@ -236,4 +236,5 @@
         left: calc(50% - 140px);
     }
 }
+
 
