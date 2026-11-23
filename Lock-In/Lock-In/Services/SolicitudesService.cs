@@ -6,7 +6,9 @@ using System.Linq.Expressions;
 
 namespace Lock_In.Services;
 
-public class SolicitudesService(IDbContextFactory<Contexto> contextFactory) 
+public class SolicitudesService(
+    IDbContextFactory<Contexto> contextFactory,
+    NotificacionesTiempoRealService tiempoRealService) 
     : IServiceResult<Solicitudes, int>
 {
      public async Task<Result> Guardar(Solicitudes solicitud)
@@ -57,10 +59,56 @@ public class SolicitudesService(IDbContextFactory<Contexto> contextFactory)
             Estado = EstadoSolicitud.Pendiente
         };
 
+
         contexto.Solicitudes.Add(nuevaSolicitud);
 
-        return Result.Success(await contexto.SaveChangesAsync() > 0);
-     }
+        // Buscar administradores y bibliotecarios
+
+        var destinatarios = await contexto.Users
+            .Where(u => contexto.UserRoles.Any(ur =>
+                ur.UserId == u.Id &&
+                contexto.Roles.Any(r =>
+                    r.Id == ur.RoleId &&
+                    (r.Name == "Administrador" ||
+                     r.Name == "Bibliotecario"))))
+            .Select(u => u.Id)
+            .ToListAsync();
+
+        // Crear una notificación para cada destinatario
+        foreach (var usuarioId in destinatarios)
+        {
+            contexto.Notificaciones.Add(new Notificaciones
+            {
+                UsuarioId = usuarioId,
+                Titulo = "Nueva solicitud de casillero",
+                Mensaje = "Un estudiante ha solicitado un casillero.",
+                Fecha = DateTime.UtcNow,
+                Leida = false,
+                Solicitud = nuevaSolicitud
+            });
+        }
+
+        // Guardar solicitud y notificaciones juntas
+
+        var guardado = await contexto.SaveChangesAsync();
+
+        if (guardado <= 0)
+        {
+            return Result.Failure(
+                new Error("ERROR_GUARDADO",
+                    "No se pudo registrar la solicitud."));
+        }
+
+        // Avisar a los administradores y bibliotecarios conectados
+        foreach (var usuarioId in destinatarios)
+        {
+            await NotificarEnTiempoReal(usuarioId);
+        }
+
+        return Result.Success();
+
+
+    }
 
     public async Task<Result<Solicitudes?>> Buscar(int solicitudId)
     {
@@ -92,22 +140,68 @@ public class SolicitudesService(IDbContextFactory<Contexto> contextFactory)
         return Result.Success(false);
     }
 
+
     public async Task<Result> Cancelar(int solicitudId, int estudianteId)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
 
         var solicitud = await contexto.Solicitudes
-            .FirstOrDefaultAsync(s => s.SolicitudId == solicitudId
-            && s.EstudianteId == estudianteId);
+            .FirstOrDefaultAsync(s =>
+                s.SolicitudId == solicitudId &&
+                s.EstudianteId == estudianteId);
 
-        if(solicitud is null || solicitud.Estado != EstadoSolicitud.Pendiente)
+        if (solicitud is null || solicitud.Estado != EstadoSolicitud.Pendiente)
         {
-            return Result.Success(false);
+            return Result.Failure(
+                new Error("SOLICITUD_NO_DISPONIBLE",
+                    "La solicitud no puede cancelarse."));
         }
+
         solicitud.Estado = EstadoSolicitud.Cancelada;
         solicitud.FechaRespuesta = DateTime.UtcNow;
 
-        return Result.Success(await contexto.SaveChangesAsync() > 0);
+        // Buscar administradores y bibliotecarios
+        var destinatarios = await contexto.Users
+            .Where(u => contexto.UserRoles.Any(ur =>
+                ur.UserId == u.Id &&
+                contexto.Roles.Any(r =>
+                    r.Id == ur.RoleId &&
+                    (r.Name == "Administrador" ||
+                     r.Name == "Bibliotecario"))))
+            .Select(u => u.Id)
+            .ToListAsync();
+
+        // Crear las notificaciones
+        foreach (var usuarioId in destinatarios)
+        {
+            contexto.Notificaciones.Add(new Notificaciones
+            {
+                UsuarioId = usuarioId,
+                Titulo = "Solicitud cancelada",
+                Mensaje = "Un estudiante ha cancelado una solicitud de casillero.",
+                Fecha = DateTime.UtcNow,
+                Leida = false,
+                SolicitudId = solicitud.SolicitudId,
+                Url = "/Solicitudes/Index"
+            });
+        }
+
+        var guardado = await contexto.SaveChangesAsync();
+
+        if (guardado <= 0)
+        {
+            return Result.Failure(
+                new Error("ERROR_GUARDADO",
+                    "No se pudo cancelar la solicitud."));
+        }
+
+        // Actualizar las campanas en tiempo real
+        foreach (var usuarioId in destinatarios)
+        {
+            await NotificarEnTiempoReal(usuarioId);
+        }
+
+        return Result.Success();
     }
 
 
@@ -219,10 +313,51 @@ public class SolicitudesService(IDbContextFactory<Contexto> contextFactory)
             Estado = EstadoAsignacion.PendienteEntrega
         };
 
+
         contexto.Asignaciones.Add(asignacion);
+
+        // Buscar al estudiante propietario de la solicitud
+        var estudiante = await contexto.Estudiantes.FirstOrDefaultAsync(e => e.EstudianteId == solicitud.EstudianteId);
+
+        if (estudiante is null ||
+            string.IsNullOrEmpty(estudiante.ApplicationUserId))
+        {
+            return Result.Failure(
+                new Error("ESTUDIANTE_NO_ENCONTRADO",
+                    "No se encontró el usuario del estudiante."));
+        }
+
+        // Crear notificación para el estudiante
+        var notificacion = new Notificaciones
+        {
+            UsuarioId = estudiante.ApplicationUserId,
+            Titulo = "Solicitud aprobada",
+            Mensaje = "Tu solicitud de casillero ha sido aprobada. " +
+                      "La asignación está pendiente de entrega de llave.",
+            Fecha = DateTime.UtcNow,
+            Leida = false,
+            SolicitudId = solicitud.SolicitudId,
+            Url = "/Asignaciones/Index"
+        };
+
+        contexto.Notificaciones.Add(notificacion);
+
+        // Guardar aprobación, asignación y notificación
+
         var guardado = await contexto.SaveChangesAsync();
 
-        return guardado > 0 ? Result.Success() : Result.Failure(new Error("Error guardado", "No se guradaron los cambios"));
+        if (guardado <= 0)
+        {
+            return Result.Failure(
+                new Error("ERROR_GUARDADO",
+                    "No se guardaron los cambios."));
+        }
+
+        // Notificar al estudiante en tiempo real
+        await NotificarEnTiempoReal(estudiante.ApplicationUserId);
+
+        return Result.Success();
+
 
     }
 
@@ -260,16 +395,48 @@ public class SolicitudesService(IDbContextFactory<Contexto> contextFactory)
         solicitud.RevisadoPorId = revisadoPor;
         solicitud.MotivoRechazo = motivo.Trim();
 
+
+        var estudiante = await contexto.Estudiantes
+            .FirstOrDefaultAsync(e =>
+                e.EstudianteId == solicitud.EstudianteId);
+
+        if (estudiante is null ||
+            string.IsNullOrEmpty(estudiante.ApplicationUserId))
+        {
+            return Result.Failure(
+                new Error("ESTUDIANTE_NO_ENCONTRADO",
+                    "No se encontró el usuario del estudiante."));
+        }
+
+        var notificacion = new Notificaciones
+        {
+            UsuarioId = estudiante.ApplicationUserId,
+            Titulo = "Solicitud rechazada",
+            Mensaje = $"Tu solicitud de casillero fue rechazada. Motivo: {motivo.Trim()}",
+            Fecha = DateTime.UtcNow,
+            Leida = false,
+            SolicitudId = solicitud.SolicitudId,
+            Url = "/"
+        };
+
+        contexto.Notificaciones.Add(notificacion);
+
+
+
         var guardado = await contexto.SaveChangesAsync();
 
-        return guardado > 0
-            ? Result.Success()
-            : Result.Failure(
-                new Error(
-                    "ERROR_GUARDADO",
-                    "No se guardaron los cambios."
-                )
-            );
+        if (guardado <= 0)
+        {
+            return Result.Failure(
+                new Error("ERROR_GUARDADO",
+                    "No se guardaron los cambios."));
+        }
+
+        // Notificar al estudiante en tiempo real
+        await NotificarEnTiempoReal(estudiante.ApplicationUserId);
+
+        return Result.Success();
+
     }
 
     public async Task<Estudiantes?> BuscarEstudiantePorUsuario(string usuarioId)
@@ -300,6 +467,19 @@ public class SolicitudesService(IDbContextFactory<Contexto> contextFactory)
         return await Guardar(solicitud);
     }
 
+
+    private async Task NotificarEnTiempoReal(string usuarioId)
+    {
+        try
+        {
+            await tiempoRealService.NotificarUsuario(usuarioId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"Error al enviar notificación en tiempo real: {ex.Message}");
+        }
+    }
 
 
 }

@@ -7,8 +7,10 @@
 
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-content-center mb-4">
-            <h5 class="card-title">Registro de Asignaciones</h5>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title m-0">
+                Registro de Asignaciones
+            </h5>
         </div>
 
         <div class="card-body">
@@ -43,36 +45,81 @@
                 </div>
             </div>
 
-            <div class="grid mt-2">
-                <QuickGrid Items="@itemsQueryable">
-                    <PropertyColumn Property="@(a => a.AsignacionId)" Sortable="true" />
-                    <PropertyColumn Property="@(a => a.EstudianteId)" Title="Estudiante" Sortable="true" />
-                    <PropertyColumn Property="@(a => a.CasilleroId)" Title="Casillero" Sortable="true" />
-                    <PropertyColumn Property="@(a => a.Estado)" Sortable="true" />
-                    <PropertyColumn Property="@(a => a.FechaEntrega)" Format="dd/MM/yy" Sortable="true" />
+           
+            <div class="table-responsive mt-3">
+
+                <QuickGrid Items="@itemsQueryable"
+                           Class="table table-hover align-middle text-center mt-3">
+
+                    <PropertyColumn Property="@(a => a.AsignacionId)"
+                                    Title="ID"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="@(a => a.EstudianteId)"
+                                    Title="Estudiante"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="@(a => a.CasilleroId)"
+                                    Title="Casillero"
+                                    Sortable="true" />
+
+                    <TemplateColumn Title="Estado">
+                        <span class="badge @ObtenerClaseEstado(context.Estado) px-3 py-2">
+                            @context.Estado
+                        </span>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Fecha de entrega">
+                        @(context.FechaEntrega.HasValue
+                        ? context.FechaEntrega.Value.ToLocalTime().ToString("dd/MM/yyyy")
+                         : "")
+                    </TemplateColumn>
 
                     <TemplateColumn Title="Opciones">
-                        @if (context.Estado == EstadoAsignacion.PendienteEntrega)
-                        {
-                            <button type="button" class="btn btn-sm btn-primary" @onclick="() => Entregar(context.AsignacionId)">
-                                Entregar
-                            </button>
-                        }
-                        else if (context.Estado == EstadoAsignacion.Activa)
-                        {
-                            <button type="button" class="btn btn-sm btn-warning"
-                                    data-bs-toggle="modal" data-bs-target="#modalFinalizar"
-                                    @onclick="() => SeleccionarAsignacion(context)">
-                                Finalizar
-                            </button>
-                        }
-                    </TemplateColumn>
-                </QuickGrid>
-            </div>
-        </div>
+                        <div class="d-flex justify-content-center gap-2">
 
-        <div class="card-footer d-flex justify-content-between align-center mb-4">
-            <label class="ms-3"><strong>Cantidad: </strong>@itemsQueryable?.Count()</label>
+                            @if (context.Estado == EstadoAsignacion.PendienteEntrega)
+                            {
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm"
+                                        title="Entregar casillero"
+                                        @onclick="() => Entregar(context.AsignacionId)">
+                                    <i class="bi bi-key"></i>
+                                </button>
+                            }
+                            else if (context.Estado == EstadoAsignacion.Activa)
+                            {
+                                <button type="button"
+                                        class="btn btn-outline-warning btn-sm"
+                                        title="Finalizar asignación"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalFinalizar"
+                                        @onclick="() => SeleccionarAsignacion(context)">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sin acciones</span>
+                            }
+
+                        </div>
+                    </TemplateColumn>
+
+                </QuickGrid>
+
+            </div>
+
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+            <label>
+                Cantidad: @itemsQueryable?.Count()
+            </label>
+
+            <label>
+                Activas:
+                @itemsQueryable?.Count(a => a.Estado == EstadoAsignacion.Activa)
+            </label>
         </div>
     </div>
 </div>
@@ -186,5 +233,17 @@
         });
 
         result.OnFailure(() => toastService.ShowError("No se ha podido finalizar la asignación."));
+    }
+
+    private string ObtenerClaseEstado(EstadoAsignacion estado)
+    {
+        return estado.ToString() switch
+        {
+            "PendienteEntrega" => "bg-warning text-dark",
+            "Activa" => "bg-success",
+            "Finalizada" => "bg-secondary",
+            "Cancelada" => "bg-danger",
+            _ => "bg-secondary"
+        };
     }
 }

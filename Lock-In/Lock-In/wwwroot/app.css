@@ -250,3 +250,85 @@ a {
     outline: 2px solid var(--lock-primary);
     outline-offset: 2px;
 }
+
+
+/* Barra superior de Lock-In */
+
+.lock-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 68px;
+    padding: 12px 28px;
+    background: var(--lock-surface, #FFFFFF);
+    border-bottom: 1px solid var(--lock-secondary, #B6C8DF);
+    position: relative;
+    z-index: 20;
+}
+
+.lock-topbar-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lock-primary, #3F49A5);
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.lock-topbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* Adaptación a teléfonos */
+
+@media (max-width: 640px) {
+    .lock-topbar {
+        min-height: 58px;
+        padding: 10px 16px;
+    }
+
+    .lock-topbar-title {
+        font-size: 0.9rem;
+    }
+}
+
+
+.lock-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(24, 30, 65, 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    z-index: 2000;
+}
+
+.lock-confirm-dialog {
+    width: 100%;
+    max-width: 440px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Logo del robot en la barra superior */
+.lockin-header-logo {
+    height: 48px;
+    width: auto;
+    max-width: 150px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+    .lockin-header-logo:hover {
+        transform: scale(1.05);
+    }
+
+@media (max-width: 576px) {
+    .lockin-header-logo {
+        height: 38px;
+        max-width: 110px;
+    }
+}

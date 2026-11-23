@@ -5,9 +5,15 @@
 <PageTitle>Index de Casilleros</PageTitle>
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-content-center mb-4">
-            <h5 class="card-title">Registro de Casilleros</h5>
-            <a href="Casilleros/Create" class="btn btn-primary"><span class="bi bi-plus-square"> Nuevo Casillero</span></a>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title m-0">
+                Registro de Casilleros
+            </h5>
+
+            <a href="/Casilleros/Create" class="btn btn-primary">
+                <i class="bi bi-plus-square me-2"></i>
+                Nuevo Casillero
+            </a>
         </div>
 
         <div class="card-body">
@@ -43,30 +49,68 @@
                     </div>
                 </div>
              </div>
-            <div class="grid mt-2">
-                <QuickGrid Items="@itemsQueryable">
-                    <PropertyColumn Property="@(c => c.CasilleroId)" Sortable="true" />
-                    <PropertyColumn Property="@(c => c.Numero)" Sortable="true" />
-                    <PropertyColumn Property="@(c => c.Fila)" Sortable="true" />
-                    <TemplateColumn Title="Estado" Sortable="true">
-                        <span class="badge-estado @ObtenerEstado(context.Estado)">
+            
+            <div class="table-responsive mt-3">
+
+                <QuickGrid Items="@itemsQueryable"
+                           Class="table table-hover align-middle text-center mt-3">
+
+                    <PropertyColumn Property="@(c => c.CasilleroId)"
+                                    Title="ID"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="@(c => c.Numero)"
+                                    Title="Número"
+                                    Sortable="true" />
+
+                    <PropertyColumn Property="@(c => c.Fila)"
+                                    Title="Fila"
+                                    Sortable="true" />
+
+                    <TemplateColumn Title="Estado">
+                        <span class="badge @ObtenerClaseEstado(context.Estado) px-3 py-2">
                             @context.Estado
                         </span>
                     </TemplateColumn>
-                    <TemplateColumn Title="Llave" Sortable="true">
-                        <span class="badge-estado @(context.LlaveDisponible ? "est-disponible" : "est-nodisponible")">
-                            @(context.LlaveDisponible ? "Disponible" : "No disponible")
+
+                    <TemplateColumn Title="Llave">
+                        <span class="badge @(context.LlaveDisponible
+                              ? "bg-success"
+                              : "bg-danger") px-3 py-2">
+
+                            @(context.LlaveDisponible
+                                ? "Disponible"
+                                : "No disponible")
                         </span>
                     </TemplateColumn>
 
                     <TemplateColumn Title="Opciones">
-                        <a href="/Casilleros/Edit/@context.CasilleroId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="/Casilleros/Edit/@context.CasilleroId"
+                               class="btn btn-outline-primary btn-sm"
+                               title="Editar casillero">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        </div>
                     </TemplateColumn>
+
                 </QuickGrid>
+
             </div>
+
         </div>
-        <div class="card-footer d-flex justify-content-between align-center mb-4">
-            <label class="ms-3"><strong>Cantidad: </strong>@itemsQueryable?.Count()</label>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+
+            <label>
+                <strong>Cantidad:</strong>
+                @itemsQueryable?.Count()
+            </label>
+
+            <label>
+                <strong>Disponibles:</strong>
+                @itemsQueryable?.Count(c => c.Estado == EstadoCasillero.Disponible)
+            </label>
+
         </div>
     </div>
 </div>
@@ -98,7 +142,7 @@
         }
     }
 
-    private string ObtenerEstado(EstadoCasillero estado)
+    private string ObtenerClaseEstado(EstadoCasillero estado)
     {
         switch (estado)
         {

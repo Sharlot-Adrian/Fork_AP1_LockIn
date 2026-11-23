@@ -84,56 +84,66 @@
             </div>
 
             @* Tabla de solicitudes *@
-            <QuickGrid Items="ListaSolicitudes.AsQueryable()"
-                       class="table table-hover text-center mt-3">
+            
+            <div class="table-responsive">
+                <QuickGrid Items="ListaSolicitudes.AsQueryable()"
+                           Class="table table-hover align-middle text-center mt-3">
 
-                <PropertyColumn Property="s => s.SolicitudId"
-                                Title="ID"
-                                Sortable="true" />
+                    <PropertyColumn Property="s => s.SolicitudId"
+                                    Title="ID"
+                                    Sortable="true" />
 
-                <PropertyColumn Property="s => s.Estudiante.Matricula"
-                                Title="Matrícula"
-                                Sortable="true" />
+                    <PropertyColumn Property="s => s.Estudiante.Matricula"
+                                    Title="Matrícula"
+                                    Sortable="true" />
 
-                <TemplateColumn Title="Casillero">
-                    Fila @context.Casillero?.Fila -
-                    N° @context.Casillero?.Numero
-                </TemplateColumn>
-
-                <PropertyColumn Property="s => s.FechaSolicitud"
-                                Title="Fecha"
-                                Sortable="true" />
-
-                <TemplateColumn Title="Estado">
-                    <span class="badge @ObtenerClaseEstado(context.Estado)">
-                        @context.Estado
-                    </span>
-                </TemplateColumn>
-
-                <TemplateColumn Title="Opciones">
-                    @if (context.Estado == EstadoSolicitud.Pendiente)
-                    {
-                        <button type="button"
-                                class="btn btn-outline-success bi bi-check-circle me-2"
-                                title="Aprobar"
-                                @onclick="() => SeleccionarAprobar(context)">
-                        </button>
-
-                        <button type="button"
-                                class="btn btn-outline-danger bi bi-x-circle"
-                                title="Rechazar"
-                                @onclick="() => SeleccionarRechazar(context)">
-                        </button>
-                    }
-                    else
-                    {
-                        <span class="text-muted">
-                            Sin acciones
+                    <TemplateColumn Title="Casillero">
+                        <span class="fw-semibold">
+                            Fila @context.Casillero?.Fila
                         </span>
-                    }
-                </TemplateColumn>
+                        <span class="text-muted">
+                            - N° @context.Casillero?.Numero
+                        </span>
+                    </TemplateColumn>
 
-            </QuickGrid>
+                    <TemplateColumn Title="Fecha">
+                        @context.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy")
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Estado">
+                        <span class="badge @ObtenerClaseEstado(context.Estado) px-3 py-2">
+                            @context.Estado
+                        </span>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Opciones">
+                        @if (context.Estado == EstadoSolicitud.Pendiente)
+                        {
+                            <div class="d-flex justify-content-center gap-2">
+                                <button type="button"
+                                        class="btn btn-outline-success btn-sm"
+                                        title="Aprobar solicitud"
+                                        @onclick="() => SeleccionarAprobar(context)">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm"
+                                        title="Rechazar solicitud"
+                                        @onclick="() => SeleccionarRechazar(context)">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin acciones</span>
+                        }
+                    </TemplateColumn>
+
+                </QuickGrid>
+            </div>
+
 
             @if (ListaSolicitudes.Count == 0)
             {
