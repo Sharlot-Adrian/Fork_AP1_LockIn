@@ -8,21 +8,21 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 11.0.x
-
+        
     - name: Restore dependencies
-      run: dotnet restore Lock-In.slnx
-
+      run: dotnet restore
+      
     - name: Build
-      run: dotnet build Lock-In.slnx --configuration Release --no-restore
-
+      run: dotnet build --no-restore
+      
     - name: Test
-      run: dotnet test Lock-In.slnx --configuration Release --no-build --verbosity normal-no-restore
+      run: dotnet test --no-build --verbosity normal
