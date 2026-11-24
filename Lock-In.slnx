@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="Lock-In/Lock-In.csproj" />
+  <Project Path="LockinTest/LockinTest.csproj" Id="1ab92823-5029-4f87-85b3-06f220e25515" />
 </Solution>
